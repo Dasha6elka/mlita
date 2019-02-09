@@ -117,5 +117,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	std::cout << max << std::endl;
+	std::ofstream output;
+	if (!output)
+	{
+		std::ofstream output("output.txt");
+	}
+	output << max;
+	output.close();
 }	
