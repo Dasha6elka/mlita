@@ -19,7 +19,7 @@ Microsoft Visual C++ 2017
 #include <set>
 #include <algorithm>
 
-std::vector<std::string> read_file(const std::string &path){
+std::vector<std::string> read_file(const std::string &path, int &count){
 	std::vector<std::string> result{};
 	std::string line;
 	std::ifstream input;
@@ -29,15 +29,22 @@ std::vector<std::string> read_file(const std::string &path){
 		throw std::runtime_error("Cannot open file" + path);
 	}
 	std::getline(input, line);
+	count = std::stoi(line);
+	int i = 0;
 	while (std::getline(input, line))
 	{
 		result.push_back(line);
 		line.clear();
+		i++;
+	}
+	if (i != count)
+	{
+		throw std::runtime_error("The number of bones doesn't match the set number");
 	}
 	return result;
 }
 
-void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, int size, const int depth, std::vector<int> &results)
+void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, int size, const int depth, std::vector<long long> &results)
 {
 	// Добавление вершины в число
 	number.push_back(root);
@@ -50,7 +57,7 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 		{
 			string += std::to_string(j);
 		}
-		const auto result = std::stoi(string);
+		const auto result = std::stoll(string);
 		results.push_back(result);
 
 		return;
@@ -71,6 +78,10 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 		// Уменьшаем счётчики т.к. удалили элементы
 		size--;
 		i--;
+		if (root == child)
+		{
+			size--;
+		}
 		// Рекурсивный поиск
 		search(child, dict, number, dict[child].size(), depth + 1, results);
 	}
@@ -81,47 +92,54 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 	{
 		string += std::to_string(j);
 	}
-	const auto result = std::stoi(string);
+	const auto result = std::stoll(string);
 	results.push_back(result);
 }
 
 int main(int argc, char *argv[])
 {
-	auto max = INT_MIN;
-	std::map<int, std::vector<int>> dict;
-	auto text = read_file("input.txt");
-
-	// Инициализация списка смежности
-	for (auto &bone : text)
+	try
 	{
-		auto first = bone[0] - '0';
-		auto second = bone[2] - '0';
+		long long max = LONG_MIN;
+		std::map<int, std::vector<int>> dict;
+		auto count = 0;
+		auto text = read_file("input.txt", count);
 
-		dict[first].push_back(second);
-		dict[second].push_back(first);
-	}
-
-	// Перебор по списку смежности и поиск
-	for (auto &pair : dict)
-	{
-		std::vector<int> results;
-		search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
-
-		// Нахождение максимального из списка результатов
-		for (auto && result : results)
+		// Инициализация списка смежности
+		for (auto &bone : text)
 		{
-			if (result > max)
+			auto first = bone[0] - '0';
+			auto second = bone[2] - '0';
+
+			dict[first].push_back(second);
+			dict[second].push_back(first);
+		}
+
+		// Перебор по списку смежности и поиск
+		for (auto &pair : dict)
+		{
+			std::vector<long long> results;
+			search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
+
+			// Нахождение максимального из списка результатов
+			for (auto && result : results)
 			{
-				max = result;
+				if (result > max)
+				{
+					max = result;
+				}
 			}
 		}
-	}
 
-	std::ofstream output;
-	if (!output)
-	{
 		std::ofstream output("output.txt");
+		// Создание файла вывода, если его нет
+		if (!output)
+		{
+			std::ofstream output("output.txt");
+		}
+		output << max;
+	} catch (std::exception &ex)
+	{
+		std::cerr << ex.what() << std::endl;
 	}
-	output << max;
-	output.close();
 }	
