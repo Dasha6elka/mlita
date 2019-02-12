@@ -70,11 +70,27 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 	// Перебор по вектору ключа из словаря
 	for (auto i = 0; i < size; i++)
 	{
+		if (dict[root].empty())
+		{
+			continue;
+		}
 		auto child = dict[root][i];
 		// Удаляем ребёнка из исходного вектора ключа
-		dict[root].erase(std::remove(dict[root].begin(), dict[root].end(), child), dict[root].end());
+		{
+			auto position = std::find(dict[root].begin(), dict[root].end(), child);
+			if (position != dict[root].end())
+			{
+				dict[root].erase(position);
+			}
+		}
 		// Удаляем исходный ключ из вектора ключа ребёнка
-		dict[child].erase(std::remove(dict[child].begin(), dict[child].end(), root), dict[child].end());
+		{
+			auto position = std::find(dict[child].begin(), dict[child].end(), root);
+			if (position != dict[child].end())
+			{
+				dict[child].erase(position);
+			}
+		}
 		// Уменьшаем счётчики т.к. удалили элементы
 		size--;
 		i--;
