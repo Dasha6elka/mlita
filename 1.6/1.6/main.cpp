@@ -41,10 +41,14 @@ std::vector<std::string> read_file(const std::string &path, int &count){
 	{
 		throw std::runtime_error("The number of bones doesn't match the set number");
 	}
+	if (count == 0 || count == 1 || count > 20)
+	{
+		throw std::runtime_error("Bone count does not match");
+	}
 	return result;
 }
 
-void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, int size, const int depth, std::vector<long long> &results)
+void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, int size, const int depth, std::vector<std::string> &results)
 {
 	// Добавление вершины в число
 	number.push_back(root);
@@ -57,7 +61,7 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 		{
 			string += std::to_string(j);
 		}
-		const auto result = std::stoll(string);
+		const auto result = string;
 		results.push_back(result);
 
 		return;
@@ -108,7 +112,7 @@ void search(const int root, std::map<int, std::vector<int>> dict, std::vector<in
 	{
 		string += std::to_string(j);
 	}
-	const auto result = std::stoll(string);
+	const auto result = string;
 	results.push_back(result);
 }
 
@@ -116,7 +120,7 @@ int main(int argc, char *argv[])
 {
 	try
 	{
-		long long max = LONG_MIN;
+		std::string max = "";
 		std::map<int, std::vector<int>> dict;
 		auto count = 0;
 		auto text = read_file("input.txt", count);
@@ -127,6 +131,11 @@ int main(int argc, char *argv[])
 			auto first = bone[0] - '0';
 			auto second = bone[2] - '0';
 
+			if (first > 6 || second >  6)
+			{
+				throw std::runtime_error("The bone number exceeds the maximum");
+			}
+
 			dict[first].push_back(second);
 			dict[second].push_back(first);
 		}
@@ -134,13 +143,17 @@ int main(int argc, char *argv[])
 		// Перебор по списку смежности и поиск
 		for (auto &pair : dict)
 		{
-			std::vector<long long> results;
+			std::vector<std::string> results;
 			search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
 
 			// Нахождение максимального из списка результатов
 			for (auto && result : results)
 			{
-				if (result > max)
+				if (max[0] == '0' && result[0] > '0')
+				{
+					max = result;
+				}
+				if (result > max && result.size() >= max.size())
 				{
 					max = result;
 				}
