@@ -12,6 +12,8 @@ Microsoft Visual C++ 2017
 
 #include "pch.h"
 #include <vector>
+#include <functional>
+
 #include <fstream>
 #include <string>
 #include <map>
@@ -30,7 +32,7 @@ std::vector<std::string> read_file(const std::string &path, int &count){
 	}
 	std::getline(input, line);
 	count = std::stoi(line);
-	int i = 0;
+	auto i = 0;
 	while (std::getline(input, line))
 	{
 		result.push_back(line);
@@ -48,7 +50,7 @@ std::vector<std::string> read_file(const std::string &path, int &count){
 	return result;
 }
 
-void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, int size, const int depth, std::vector<std::string> &results)
+void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, std::size_t size, const int depth, std::vector<std::string> &results)
 {
 	// Добавление вершины в число
 	number.push_back(root);
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
 {
 	try
 	{
-		std::string max = "";
+		std::string max;
 		std::map<int, std::vector<int>> dict;
 		auto count = 0;
 		auto text = read_file("input.txt", count);
@@ -138,6 +140,36 @@ int main(int argc, char *argv[])
 
 			dict[first].push_back(second);
 			dict[second].push_back(first);
+		}
+
+		for (auto &pair : dict)
+		{
+			std::sort(pair.second.begin(), pair.second.end(), std::less<>());
+		}
+
+		// Перебор по списку смежности и поиск
+		for (auto &pair : dict)
+		{
+			std::vector<std::string> results;
+			search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
+
+			// Нахождение максимального из списка результатов
+			for (auto && result : results)
+			{
+				if (max[0] == '0' && result[0] > '0')
+				{
+					max = result;
+				}
+				if (result > max && result.size() >= max.size())
+				{
+					max = result;
+				}
+			}
+		}
+
+		for (auto &pair : dict)
+		{
+			std::sort(pair.second.begin(), pair.second.end(), std::greater<>());
 		}
 
 		// Перебор по списку смежности и поиск
@@ -161,11 +193,6 @@ int main(int argc, char *argv[])
 		}
 
 		std::ofstream output("output.txt");
-		// Создание файла вывода, если его нет
-		if (!output)
-		{
-			std::ofstream output("output.txt");
-		}
 		output << max;
 	} catch (std::exception &ex)
 	{
