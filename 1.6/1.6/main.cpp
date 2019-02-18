@@ -109,21 +109,42 @@ bool less(const std::string& left, const std::string& right)
 {
 	auto left_copy(left);
 	auto right_copy(right);
+	const auto left_size = left_copy.size();
+	const auto right_size = right_copy.size();
+	auto max_size = left_size;
+	if (max_size < right_size)
+	{
+		max_size = right_size;
+	}
 	left_copy.erase(0, std::min(left_copy.find_first_not_of('0'), left_copy.size() - 1));
 	right_copy.erase(0, std::min(right_copy.find_first_not_of('0'), right_copy.size() - 1));
 	const auto result = static_cast<int>(left_copy.size() - right_copy.size());
 	if (result > 0)
 	{
-		return false;
+		if (max_size == left_size)
+		{
+			return false;
+		}
 	}
 	if (result < 0)
 	{
-		return true;
+		if (max_size == right_size)
+		{
+			return true;
+		}
 	}
 	for (std::size_t i = 0; i < left_copy.size(); i++)
 	{
 		if (left_copy[i] > right_copy[i]) return false;
 		if (left_copy[i] < right_copy[i]) return true;
+	}
+	if (max_size == left_size)
+	{
+		return false;
+	}
+	if (max_size == right_size)
+	{
+		return true;
 	}
 	return left_copy < right_copy;
 }
