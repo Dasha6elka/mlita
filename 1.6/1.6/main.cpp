@@ -11,191 +11,158 @@ Microsoft Visual C++ 2017
  */
 
 #include "pch.h"
-#include <vector>
-#include <functional>
-
 #include <fstream>
+#include <vector>
 #include <string>
-#include <map>
 #include <iostream>
-#include <set>
 #include <algorithm>
 
-std::vector<std::string> read_file(const std::string &path, int &count){
-	std::vector<std::string> result{};
-	std::string line;
-	std::ifstream input;
-	input.open(path);
+struct domino
+{
+	int left = 0;
+	int right = 0;
+	bool used = false;
+};
+
+const int WRONG_DIGIT = -1;
+const int MAX_COUNT = 20;
+const int ZERO_CODE = 48;
+const int MAX_DOMINO_VALUE = 6;
+
+std::vector<domino> read(const std::string& path);
+
+void write(const std::string& result, const std::string& path);
+
+bool less(const std::string& left, const std::string& right);
+
+std::string find_max_number(std::vector<domino>& dominos, int last_digit);
+
+int main()
+{
+	try
+	{
+		auto dominos = read("input.txt");
+		const auto max = find_max_number(dominos, WRONG_DIGIT);
+		write(max, "output.txt");
+	}
+	catch (std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+	}
+}
+
+std::vector<domino> read(const std::string& path)
+{
+	std::ifstream input(path);
 	if (!input.is_open())
 	{
 		throw std::runtime_error("Cannot open file" + path);
 	}
+	std::vector<std::string> result{};
+	std::string line;
 	std::getline(input, line);
-	count = std::stoi(line);
+	const auto count = std::stoi(line);
+
 	auto i = 0;
+
 	while (std::getline(input, line))
 	{
 		result.push_back(line);
 		line.clear();
 		i++;
 	}
+
 	if (i != count)
 	{
 		throw std::runtime_error("The number of bones doesn't match the set number");
 	}
-	if (count == 0 || count == 1 || count > 20)
+	if (count == 0 || count == 1 || count > MAX_COUNT)
 	{
 		throw std::runtime_error("Bone count does not match");
 	}
-	return result;
+
+	std::vector<domino> dominos(count);
+	std::size_t j = 0;
+	for (auto& d : dominos)
+	{
+		auto current = result[j];
+		d.left = current[0] - ZERO_CODE;
+		d.right = current[2] - ZERO_CODE;
+
+		if (d.left > MAX_DOMINO_VALUE || d.right > MAX_DOMINO_VALUE)
+		{
+			throw std::runtime_error("The bone number exceeds the maximum");
+		}
+
+		j++;
+	}
+	return dominos;
 }
 
-void search(const int root, std::map<int, std::vector<int>> dict, std::vector<int> number, std::size_t size, const int depth, std::vector<std::string> &results)
+void write(const std::string& result, const std::string& path)
 {
-	// Добавление вершины в число
-	number.push_back(root);
-	// Если вектор словаря пустой, то конец рекурсии.
-	// Переводим вектор цифр числа в строку и в int. Добавляем в вектор результатов.
-	if (dict[root].empty())
-	{
-		std::string string;
-		for (auto j : number)
-		{
-			string += std::to_string(j);
-		}
-		const auto result = string;
-		results.push_back(result);
+	std::ofstream output(path);
+	output << result;
+}
 
-		return;
-	}
-	// Если глубина больше 0, добавляем вторую половину кости
-	if (depth > 0)
+bool less(const std::string& left, const std::string& right)
+{
+	auto left_copy(left);
+	auto right_copy(right);
+	left_copy.erase(0, std::min(left_copy.find_first_not_of('0'), left_copy.size() - 1));
+	right_copy.erase(0, std::min(right_copy.find_first_not_of('0'), right_copy.size() - 1));
+	const auto result = static_cast<int>(left_copy.size() - right_copy.size());
+	if (result > 0)
 	{
-		number.push_back(root);
+		return false;
 	}
-	// Перебор по вектору ключа из словаря
-	for (auto i = 0; i < size; i++)
+	if (result < 0)
 	{
-		if (dict[root].empty())
+		return true;
+	}
+	for (std::size_t i = 0; i < left_copy.size(); i++)
+	{
+		if (left_copy[i] > right_copy[i]) return false;
+		if (left_copy[i] < right_copy[i]) return true;
+	}
+	return left_copy < right_copy;
+}
+
+std::string find_max_number(std::vector<domino>& dominos, const int last_digit)
+{
+	std::string result;
+
+	for (auto& d : dominos)
+	{
+		if (d.used)
 		{
 			continue;
 		}
-		auto child = dict[root][i];
-		// Удаляем ребёнка из исходного вектора ключа
+
+		if (last_digit == WRONG_DIGIT || d.left == last_digit)
 		{
-			auto position = std::find(dict[root].begin(), dict[root].end(), child);
-			if (position != dict[root].end())
+			auto tmp = std::to_string(d.left) + std::to_string(d.right);
+			d.used = true;
+			tmp += find_max_number(dominos, d.right);
+			d.used = false;
+			if (less(result, tmp))
 			{
-				dict[root].erase(position);
+				result = std::move(tmp);
 			}
 		}
-		// Удаляем исходный ключ из вектора ключа ребёнка
+
+		if (last_digit == WRONG_DIGIT || d.right == last_digit)
 		{
-			auto position = std::find(dict[child].begin(), dict[child].end(), root);
-			if (position != dict[child].end())
+			auto tmp = std::to_string(d.right) + std::to_string(d.left);
+			d.used = true;
+			tmp += find_max_number(dominos, d.left);
+			d.used = false;
+			if (less(result, tmp))
 			{
-				dict[child].erase(position);
+				result = std::move(tmp);
 			}
 		}
-		// Уменьшаем счётчики т.к. удалили элементы
-		size--;
-		i--;
-		if (root == child)
-		{
-			size--;
-		}
-		// Рекурсивный поиск
-		search(child, dict, number, dict[child].size(), depth + 1, results);
 	}
 
-	// Переводим вектор цифр числа в строку и в int. Добавляем в вектор результатов.
-	std::string string;
-	for (auto j : number)
-	{
-		string += std::to_string(j);
-	}
-	const auto result = string;
-	results.push_back(result);
+	return result;
 }
-
-int main(int argc, char *argv[])
-{
-	try
-	{
-		std::string max;
-		std::map<int, std::vector<int>> dict;
-		auto count = 0;
-		auto text = read_file("input.txt", count);
-
-		// Инициализация списка смежности
-		for (auto &bone : text)
-		{
-			auto first = bone[0] - '0';
-			auto second = bone[2] - '0';
-
-			if (first > 6 || second >  6)
-			{
-				throw std::runtime_error("The bone number exceeds the maximum");
-			}
-
-			dict[first].push_back(second);
-			dict[second].push_back(first);
-		}
-
-		for (auto &pair : dict)
-		{
-			std::sort(pair.second.begin(), pair.second.end(), std::less<>());
-		}
-
-		// Перебор по списку смежности и поиск
-		for (auto &pair : dict)
-		{
-			std::vector<std::string> results;
-			search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
-
-			// Нахождение максимального из списка результатов
-			for (auto && result : results)
-			{
-				if (max[0] == '0' && result[0] > '0')
-				{
-					max = result;
-				}
-				if (result > max && result.size() >= max.size())
-				{
-					max = result;
-				}
-			}
-		}
-
-		for (auto &pair : dict)
-		{
-			std::sort(pair.second.begin(), pair.second.end(), std::greater<>());
-		}
-
-		// Перебор по списку смежности и поиск
-		for (auto &pair : dict)
-		{
-			std::vector<std::string> results;
-			search(pair.first, dict, std::vector<int>(), dict[pair.first].size(), 0, results);
-
-			// Нахождение максимального из списка результатов
-			for (auto && result : results)
-			{
-				if (max[0] == '0' && result[0] > '0')
-				{
-					max = result;
-				}
-				if (result > max && result.size() >= max.size())
-				{
-					max = result;
-				}
-			}
-		}
-
-		std::ofstream output("output.txt");
-		output << max;
-	} catch (std::exception &ex)
-	{
-		std::cerr << ex.what() << std::endl;
-	}
-}	
