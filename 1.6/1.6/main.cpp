@@ -6,7 +6,7 @@
 Следующие N строк содержат два целых числа X и Y (0  X, Y  6), разделенные пробелом.
 Вывод. В выходной файл необходимо вывести максимальное целое число, цифры которого соответствуют значению костей в цепочке.
 Щеглова Дарья ПС-23
-Microsoft Visual C++ 2017 
+Microsoft Visual C++ 2017
 Версия 15.9.6
  */
 
@@ -15,35 +15,32 @@ Microsoft Visual C++ 2017
 #include <vector>
 #include <string>
 #include <iostream>
-#include <algorithm>
 
-struct domino
-{
-	int left = 0;
-	int right = 0;
-	bool used = false;
-};
-
-const int WRONG_DIGIT = -1;
 const int MAX_COUNT = 20;
-const int ZERO_CODE = 48;
-const int MAX_DOMINO_VALUE = 6;
+const int MIN_COUNT = 2;
+const int MAX_DOMINO_VALUE = 7;
+const std::string INPUT_PATH= "input.txt";
+const std::string OUTPUT_PATH= "output.txt";
 
-std::vector<domino> read(const std::string& path);
+void read(std::vector<std::vector<int>>& frequency);
 
-void write(const std::string& result, const std::string& path);
+void find_max_number(std::string& current, std::string& max_number, std::vector<std::vector<int>> frequency);
 
-bool less(const std::string& left, const std::string& right);
-
-std::string find_max_number(std::vector<domino>& dominos, int last_digit);
+void write(std::string max_number);
 
 int main()
 {
 	try
 	{
-		auto dominos = read("input.txt");
-		const auto max = find_max_number(dominos, WRONG_DIGIT);
-		write(max, "output.txt");
+		std::vector<std::vector<int>> frequency;
+		std::string current;
+		std::string max_number;
+
+		read(frequency);
+
+		find_max_number(current, max_number, frequency);
+
+		write(max_number);
 	}
 	catch (std::exception& ex)
 	{
@@ -51,139 +48,111 @@ int main()
 	}
 }
 
-std::vector<domino> read(const std::string& path)
+void read(std::vector<std::vector<int>>& frequency)
 {
-	std::ifstream input(path);
+	std::ifstream input(INPUT_PATH);
 	if (!input.is_open())
 	{
-		throw std::runtime_error("Cannot open file" + path);
+		throw std::runtime_error("Cannot open file" + INPUT_PATH);
 	}
-	std::vector<std::string> result{};
+	frequency.resize(MAX_DOMINO_VALUE);
+	for (int i = 0; i < MAX_DOMINO_VALUE; ++i)
+	{
+		for (int j = 0; j < MAX_DOMINO_VALUE; ++j)
+		{
+			frequency[i].push_back(0);
+		}
+	}
 	std::string line;
 	std::getline(input, line);
-	const auto count = std::stoi(line);
+	auto count = std::stoi(line);
 
-	auto i = 0;
-
-	while (std::getline(input, line))
-	{
-		result.push_back(line);
-		line.clear();
-		i++;
-	}
-
-	if (i != count)
-	{
-		throw std::runtime_error("The number of bones doesn't match the set number");
-	}
-	if (count == 0 || count == 1 || count > MAX_COUNT)
+	if (count < MIN_COUNT || count > MAX_COUNT)
 	{
 		throw std::runtime_error("Bone count does not match");
 	}
 
-	std::vector<domino> dominos(count);
-	std::size_t j = 0;
-	for (auto& d : dominos)
+	while (count > 0)
 	{
-		auto current = result[j];
-		d.left = current[0] - ZERO_CODE;
-		d.right = current[2] - ZERO_CODE;
-
-		if (d.left > MAX_DOMINO_VALUE || d.right > MAX_DOMINO_VALUE)
+		if (input.eof())
 		{
-			throw std::runtime_error("The bone number exceeds the maximum");
+			break;
 		}
-
-		j++;
-	}
-	return dominos;
-}
-
-void write(const std::string& result, const std::string& path)
-{
-	std::ofstream output(path);
-	output << result;
-}
-
-bool less(const std::string& left, const std::string& right)
-{
-	auto left_copy(left);
-	auto right_copy(right);
-	const auto left_size = left_copy.size();
-	const auto right_size = right_copy.size();
-	auto max_size = left_size;
-	if (max_size < right_size)
-	{
-		max_size = right_size;
-	}
-	left_copy.erase(0, std::min(left_copy.find_first_not_of('0'), left_copy.size() - 1));
-	right_copy.erase(0, std::min(right_copy.find_first_not_of('0'), right_copy.size() - 1));
-	const auto result = static_cast<int>(left_copy.size() - right_copy.size());
-	if (result > 0)
-	{
-		if (max_size == left_size)
+		else
 		{
-			return false;
-		}
-	}
-	if (result < 0)
-	{
-		if (max_size == right_size)
-		{
-			return true;
-		}
-	}
-	for (std::size_t i = 0; i < left_copy.size(); i++)
-	{
-		if (left_copy[i] > right_copy[i]) return false;
-		if (left_copy[i] < right_copy[i]) return true;
-	}
-	if (max_size == left_size)
-	{
-		return false;
-	}
-	if (max_size == right_size)
-	{
-		return true;
-	}
-	return left_copy < right_copy;
-}
-
-std::string find_max_number(std::vector<domino>& dominos, const int last_digit)
-{
-	std::string result;
-
-	for (auto& d : dominos)
-	{
-		if (d.used)
-		{
-			continue;
-		}
-
-		if (last_digit == WRONG_DIGIT || d.left == last_digit)
-		{
-			auto tmp = std::to_string(d.left) + std::to_string(d.right);
-			d.used = true;
-			tmp += find_max_number(dominos, d.right);
-			d.used = false;
-			if (less(result, tmp))
+			int left, right;
+			input >> left >> right;
+			if (((left < 0) || (left > 6)) || ((right < 0) || (right > 6)))
 			{
-				result = std::move(tmp);
+				throw std::runtime_error("The bone number exceeds the maximum");
+			}
+			++frequency[left][right];
+			++frequency[right][left];
+		}
+		--count;
+	}
+
+	if (count > 0)
+	{
+		throw std::runtime_error("Your number of dominos is not equal to the Domino number listed");
+	}
+}
+
+void find_max_number(std::string& current, std::string& max_number, std::vector<std::vector<int>> frequency)
+{
+	if (max_number.size() < current.size() || (max_number.size() == current.size() && max_number < current))
+	{
+		max_number = current;
+	}
+
+	if (current.empty())
+	{
+		for (int i = 0; i < MAX_DOMINO_VALUE; ++i)
+		{
+			for (int j = 0; j < MAX_DOMINO_VALUE; ++j)
+			{
+				if (i == 0 && j == 0)
+				{
+					continue;
+				}
+				if (frequency[i][j] > 0)
+				{
+					current.push_back(char(i + '0'));
+					current.push_back(char(j + '0'));
+					--frequency[i][j];
+					--frequency[j][i];
+					find_max_number(current, max_number, frequency);
+					current.pop_back();
+					current.pop_back();
+					++frequency[i][j];
+					++frequency[j][i];
+				}
 			}
 		}
-
-		if (last_digit == WRONG_DIGIT || d.right == last_digit)
+	} else
+	{
+		int digit = current.back() - '0';
+		for (int j = 0; j < MAX_DOMINO_VALUE; ++j)
 		{
-			auto tmp = std::to_string(d.right) + std::to_string(d.left);
-			d.used = true;
-			tmp += find_max_number(dominos, d.left);
-			d.used = false;
-			if (less(result, tmp))
+			if (frequency[digit][j] > 0)
 			{
-				result = std::move(tmp);
+				current.push_back(char(digit + '0'));
+				current.push_back(char(j + '0'));
+				--frequency[digit][j];
+				--frequency[j][digit];
+				find_max_number(current, max_number, frequency);
+				current.pop_back();
+				current.pop_back();
+				++frequency[digit][j];
+				++frequency[j][digit];
 			}
 		}
 	}
+}
 
-	return result;
+void write(const std::string max_number)
+{
+	std::ofstream output(OUTPUT_PATH);
+	output << max_number;
+	std::cout << max_number << std::endl;
 }
