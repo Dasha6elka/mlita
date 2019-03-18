@@ -1,8 +1,20 @@
-﻿#include "pch.h"
+﻿/*
+6.2. Длинное деление (7)
+Заданы два целых положительных числа. Требуется найти их частное и остаток от деления.
+Ввод. В первой строке файла INPUT.TXT задано делимое, во второй – делитель. Количество
+цифр делимого и делителя от 1 до 100.
+Вывод. В первой строке файла OUTPUT.TXT вывести частное, во второй строке - остаток.
+Щеглова Дарья ПС-23
+Microsoft Visual C++ 2017
+Версия 15.9.6
+ */
+
+#include "pch.h"
 #include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 const int MAX_LENGTH = 100;
 const int BASE = 10;
@@ -240,9 +252,13 @@ std::istream& operator>>(std::istream& in, BigInt& number)
 
 std::ostream& operator<<(std::ostream& out, BigInt& number)
 {
-
-	for (auto i = number.amount - 1; i >= 0; i--)
+	if (std::all_of(number.digits.cbegin(), number.digits.cend(), [](int i) {return i == 0;}))
 	{
+		out << 0; 
+		return out;
+	}
+	for (auto i = number.amount - 1; i >= 0; i--)
+	{ 
 		out << number.digits[i];
 	}
 	return out;
