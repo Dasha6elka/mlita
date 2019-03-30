@@ -17,82 +17,89 @@ Microsoft Visual C++ 2017
 #include <string>
 #include <algorithm>
 #include <unordered_map>
+#include <iostream>
 
-const std::string input_path = "input.txt";
+const std::string input_path = "input1.txt";
 const std::string output_path = "output.txt";
 
 void write_numbers_in_vector(std::istream& input, std::vector<int>& numbers);
 
-std::unordered_map<int, int> fill_map(std::vector<int> numbers);
+std::unordered_map<int, int> fill_map(std::vector<int> const& numbers);
 
-int count_triplets(std::vector<int>& numbers, std::unordered_map<int, int> numbers_map, size_t count);
+unsigned long long count_triplets(std::vector<int> const& numbers, std::unordered_map<int, int> const& numbers_map, size_t count);
 
-void main()
+int main()
 {
-	std::ifstream input(input_path);
-	std::ofstream output(output_path);
-	if (!input.is_open())
-	{
-		throw std::runtime_error("Cannot open file" + input_path);
-	}
+    try
+    {
+        std::ifstream input(input_path);
+        std::ofstream output(output_path);
+        if (!input.is_open())
+        {
+            throw std::runtime_error("Cannot open file" + input_path);
+        }
 
-	std::vector<int> numbers;
-	size_t count;
+        std::vector<int> numbers;
+        size_t count;
 
-	input >> count;
-	numbers.reserve(count * 4);
-	write_numbers_in_vector(input, numbers);
+        input >> count;
+        numbers.reserve(count * 4);
+        write_numbers_in_vector(input, numbers);
 
-	std::sort(numbers.rbegin(), numbers.rend(), [](const int a, const int b) {return a > b; });
-	auto numbers_map = fill_map(numbers);
+        std::sort(numbers.rbegin(), numbers.rend(), [](const int a, const int b) { return a > b; });
+        auto numbers_map = fill_map(numbers);
 
-	auto triplets_amount = count_triplets(numbers, numbers_map, count);
-	output << triplets_amount << std::endl;
+        auto triplets_amount = count_triplets(numbers, numbers_map, count);
+        output << triplets_amount << std::endl;
+    }
+    catch (std::exception const& ex)
+    {
+        std::cerr << ex.what() << std::endl;
+    }
 }
 
 void write_numbers_in_vector(std::istream& input, std::vector<int>& numbers)
 {
-	int number;
-	while (input >> number)
-	{
-		numbers.push_back(number);
-	}
+    int number;
+    while (input >> number)
+    {
+        numbers.push_back(number);
+    }
 }
 
-std::unordered_map<int, int> fill_map(std::vector<int> numbers)
+std::unordered_map<int, int> fill_map(std::vector<int> const& numbers)
 {
-	std::unordered_map<int, int> numbers_map;
-	for (auto i : numbers)
-	{
-		++numbers_map[i];
-	}
-	return numbers_map;
+    std::unordered_map<int, int> numbers_map;
+    for (auto i : numbers)
+    {
+        ++numbers_map[i];
+    }
+    return numbers_map;
 }
 
-int count_triplets(std::vector<int>& numbers, std::unordered_map<int, int> numbers_map, const size_t count)
+unsigned long long count_triplets(std::vector<int> const& numbers, std::unordered_map<int, int> const& numbers_map, const size_t count)
 {
-	auto triplets_amount = 0;
-	int two_numbers_sum;
-	const auto max_number = numbers[count - 1];
-	for (size_t i = 0; i < count; ++i)
-	{
-		if ((i != count - 1) && ((numbers[i] + numbers[i + 1])) > max_number)
-		{
-			break;
-		}
-		for (auto j = i + 1; j < count; ++j)
-		{
-			two_numbers_sum = numbers[i] + numbers[j];
-			if (two_numbers_sum > max_number)
-			{
-				break;
-			}
-			auto result = numbers_map.find(two_numbers_sum);
-			if (result != numbers_map.end())
-			{
-				triplets_amount += result->second;
-			}
-		}
-	}
-	return triplets_amount;
+    unsigned long long triplets_amount = 0;
+    const auto max_number = numbers[count - 1];
+    for (size_t i = 0; i < count; ++i)
+    {
+        if ((i != count - 1) && ((numbers[i] + numbers[i + 1])) > max_number)
+        {
+            break;
+        }
+        for (auto j = i + 1; j < count; ++j)
+        {
+            auto two_numbers_sum = numbers[i] + numbers[j];
+            if (two_numbers_sum > max_number)
+            {
+                break;
+            }
+            auto result = numbers_map.find(two_numbers_sum);
+            if (result != numbers_map.end())
+            {
+                triplets_amount += result->second;
+            }
+        }
+    }
+    return triplets_amount;
 }
