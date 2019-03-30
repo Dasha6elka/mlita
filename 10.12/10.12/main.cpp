@@ -19,7 +19,7 @@ Microsoft Visual C++ 2017
 #include <unordered_map>
 #include <iostream>
 
-const std::string input_path = "input1.txt";
+const std::string input_path = "input.txt";
 const std::string output_path = "output.txt";
 
 void write_numbers_in_vector(std::istream& input, std::vector<int>& numbers);
