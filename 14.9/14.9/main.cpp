@@ -17,30 +17,18 @@ const int months_in_year = 12;
 const int start_year = 1901;
 const int end_year = 2099;
 
-void filling_vector_months(std::string months[])
-{
-	months[0] = "JANUARY";  months[1] = "FEBRUARY";  months[2] = "MARCH";  months[3] = "APRIL";
-	months[4] = "MAY";  months[5] = "JUNE";  months[6] = "JULY";  months[7] = "AUGUST";
-	months[8] = "SEPTEMBER";  months[9] = "OCTOBER";  months[10] = "NOVEMBER"; months[11] = "DECEMBER";
-}
-
-auto filling_array_days_in_month(int month_days[])
-{
-	month_days[0] = 31;  month_days[1] = 28;  month_days[2] = 31;  month_days[3] = 30;
-	month_days[4] = 31;  month_days[5] = 30;  month_days[6] = 31;  month_days[7] = 31;
-	month_days[8] = 30;  month_days[9] = 31;  month_days[10] = 30; month_days[11] = 31;
-}
-
 int main()
 {
 	std::ifstream input("input.txt");
 	std::ofstream output("output.txt");
 
-	int month_days[12];
-	std::string months[12];
-
-	filling_vector_months(months);
-	filling_array_days_in_month(month_days);
+	 std::string months[12] = {
+		"JANUARY", "FEBRUARY", "MARCH", 
+		"APRIL", "MAY", "JUNE", 
+		"JULY", "AUGUST", "SEPTEMBER", 
+		"OCTOBER", "NOVEMBER","DECEMBER"
+	};
+	int days_in_months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 	int first_year;
 	int second_year;
@@ -53,7 +41,7 @@ int main()
 	{
 		for (auto month = 1; month <= months_in_year; month++)
 		{
-			for (auto day = 1; day <= month_days[month - 1]; ++day)
+			for (auto day = 1; day <= days_in_months[month - 1]; ++day)
 			{
 				if ((week_day == 5) && (day == 13) && (year >= first_year))
 					output << year << " " << months[month - 1].data() << std::endl;
