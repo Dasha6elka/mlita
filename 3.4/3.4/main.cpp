@@ -18,10 +18,10 @@ std::ifstream input("input.txt");
 std::ofstream output("output.txt");
 
 int main() {
-	long num1, num2;
+	long long num1, num2;
 	input >> num1 >> num2;
 
-	std::vector<long> arr(200);
+	std::vector<long long> arr(30);
 	arr[0] = 1;
 	arr[1] = num2 - 1;
 
