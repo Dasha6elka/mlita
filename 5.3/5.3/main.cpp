@@ -17,26 +17,26 @@ Microsoft Visual C++ 2017
 std::fstream input("input.txt");
 std::ofstream output("output.txt");
 
-long number_of_tens(const long length_num);
+long number_of_tens(const long long length_num);
 
 int main() {
-	long num1, num2;
+	long long num1, num2;
 	input >> num1 >> num2;
 	auto s_num1 = std::to_string(num1);
 	auto s_num2 = std::to_string(num2);
 
-	const auto count_num = num2 - num1 + 1;
-	long result = 0;
+	const long long count_num = num2 - num1 + 1;
+	long long result = 0;
 
 	if (s_num2.length() == s_num1.length()) {
 		result = count_num * s_num2.length();
 	}
 	else {
-		long length_num2 = s_num2.length();
+		long long length_num2 = s_num2.length();
 		while (length_num2 >= s_num1.length())
 		{
-			long count = length_num2 - 1;
-			long number = num2 - number_of_tens(count) + 1;
+			const long long count = length_num2 - 1;
+			long long number = num2 - number_of_tens(count) + 1;
 			num2 = number_of_tens(count) - 1;
 			if (length_num2 == s_num1.length()) {
 				number = number - num1 + number_of_tens(count);
@@ -49,8 +49,8 @@ int main() {
 	output << result;
 }
 
-long number_of_tens(const long length_num) {
-	long num_of_tens = 1;
+long number_of_tens(const long long length_num) {
+	long long num_of_tens = 1;
 	for (auto i = 0; i < length_num; i++) {
 		num_of_tens *= 10;
 	}
