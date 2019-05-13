@@ -18,18 +18,20 @@ std::ofstream output("output.txt");
 
 int main()
 {
-	long long number;
-	long long counter = 0;;
+	long long counter = 0;
+	long long num;
 
-	input >> number;
+	input >> num;
 
-	for (auto i = 1; i <= number; i += 2)
-	{
-		if ((i % 3 != 0) && (i % 5 != 0))
-		{
-			counter++;
+	if (num >= 60) {
+		const long long number = num % 60;
+		counter = (num / 60) * 16 + number;
+	} else {
+		for (auto i = 1; i <= num; i += 2) {
+			if ((i % 3 != 0) && (i % 5 != 0)) {
+				counter++;
+			}
 		}
 	}
-
 	output << counter;
 }
