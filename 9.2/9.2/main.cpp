@@ -18,12 +18,10 @@ std::ofstream output("output.txt");
 
 int main()
 {
-	long long counter = 0;
 	int num;
-
 	input >> num;
 
-	counter = num - num / 2 - num / 3 + num / 6 - num / 5 + num / 10 + num / 15 - num / 30;
+	const long long counter = num - num / 2 - num / 3 + num / 6 - num / 5 + num / 10 + num / 15 - num / 30;
 
 	output << counter;
 }
