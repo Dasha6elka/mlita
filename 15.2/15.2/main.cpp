@@ -21,34 +21,47 @@ Microsoft Visual C++ 2017
 std::ifstream input("input.txt");
 std::ofstream output("output.txt");
 
+const float min_num = 2;
+const float max_num = 5;
+
+void search_win(float n, bool & is_first)
+{
+	auto first = n;
+	float second = 0;
+	while (n > 1)
+	{
+		if (is_first)
+		{
+			second = first / max_num;
+			n = first / max_num;
+			first /= max_num;
+
+			is_first = false;
+		} else
+		{
+			first = second / min_num;
+			n = second / min_num;
+			second /= min_num;
+
+			is_first = true;
+		}
+	}
+}
+
 void main() 
 {
 	float count_part = 0;
 	input >> count_part;
 
-	while (count_part)
+	while (count_part > 0)
 	{
-		float m = 0;
 		float n = 0;
 		input >> n;
+		auto is_first = true;
 
-		float N = n;
-		bool isFirst = true;
-		while (n > 1)
-		{
-			if (isFirst)
-			{
-				m = n = N = N / 5;
-				isFirst = false;
-			}
-			else
-			{
-				m = n = N = m / 2;
-				isFirst = true;
-			}
-		}
+		search_win(n, is_first);
 
-		if (!isFirst)
+		if (!is_first)
 		{
 			output << 1 << std::endl;
 		} else
